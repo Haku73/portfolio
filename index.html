@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Andrea Balzarini — Portfolio</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: #eee;
+      font-family: Arial, sans-serif;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 2.4rem;
+      font-weight: 600;
+    }
+    p.lead {
+      color: #bbb;
+      margin: 0 0 10px;
+      line-height: 1.5;
+      max-width: 900px;
+    }
+    p.muted {
+      color: #888;
+      margin: 0 0 30px;
+    }
+    .section {
+      margin-top: 40px;
+    }
+    .section > h2 {
+      font-size: 1.8rem;
+      border-bottom: 1px solid #333;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+    .project {
+      margin: 28px 0 40px;
+      padding: 18px;
+      background: #171717;
+      border: 1px solid #2a2a2a;
+      border-radius: 14px;
+    }
+    .project h3 {
+      margin: 0 0 14px;
+      font-size: 1.25rem;
+    }
+    .files {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: #1d1d1d;
+      border: 1px solid #2d2d2d;
+      border-radius: 12px;
+      padding: 10px;
+      overflow: hidden;
+    }
+    .card.video-card {
+      width: 100%;
+      max-width: 340px;
+      justify-self: center;
+    }
+    .card img, .card video {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      background: #0c0c0c;
+    }
+    .video-grid video,
+    .card.video-card video,
+    video {
+      width: 100%;
+      max-width: 320px;
+      height: auto;
+      border-radius: 12px;
+    }
+    .card.video-card video {
+      margin: 0 auto;
+    }
+    .card a {
+      color: #ddd;
+      text-decoration: none;
+      word-break: break-word;
+    }
+    .card a:hover {
+      text-decoration: underline;
+    }
+    .filename {
+      margin-top: 8px;
+      font-size: 0.92rem;
+      color: #aaa;
+    }
+    pre.text-preview {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      color: #ddd;
+      margin: 0;
+    }
+    .error {
+      color: #ff8a8a;
+      background: #2a1515;
+      border: 1px solid #5a2a2a;
+      padding: 12px 14px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Andrea Balzarini</h1>
+    <p class="lead">
+      Selezione di contenuti e progetti sviluppati come ricerca applicata su formati,
+      linguaggi visivi e workflow creativi.
+    </p>
+    <p class="muted">
+      Non rappresenta un archivio completo, ma alcune direzioni di lavoro.
+    </p>
+
+    <div id="app"></div>
+  </div>
+
+  <script>
+    const app = document.getElementById("app");
+
+    function groupBy(items, keyFn) {
+      return items.reduce((acc, item) => {
+        const key = keyFn(item);
+        acc[key] = acc[key] || [];
+        acc[key].push(item);
+        return acc;
+      }, {});
+    }
+
+    function prettyName(s) {
+      return s
+        .replaceAll("-", " ")
+        .replaceAll("_", " ")
+        .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function detectType(path) {
+      const lower = path.toLowerCase();
+      if (/\.(png|jpg|jpeg|webp|gif)$/.test(lower)) return "image";
+      if (/\.(mp4|webm|mov|m4v)$/.test(lower)) return "video";
+      if (/\.(md|txt|json)$/.test(lower)) return "text";
+      return "file";
+    }
+
+    async function fetchText(path) {
+      try {
+        const res = await fetch(path);
+        if (!res.ok) return null;
+        return await res.text();
+      } catch {
+        return null;
+      }
+    }
+
+    function setupVideoPreview(video) {
+      const previewTime = Number(video.dataset.previewTime);
+      if (!Number.isFinite(previewTime) || previewTime <= 0) return;
+
+      let previewApplied = false;
+      let firstPlayHandled = false;
+
+      function getTargetTime() {
+        if (!Number.isFinite(video.duration) || video.duration <= 0) return previewTime;
+        return Math.min(previewTime, Math.max(0, video.duration - 0.1));
+      }
+
+      function applyPreviewFrame() {
+        if (previewApplied) return;
+        previewApplied = true;
+
+        const targetTime = getTargetTime();
+        const onSeeked = () => video.pause();
+        video.addEventListener("seeked", onSeeked, { once: true });
+
+        try {
+          video.currentTime = targetTime;
+        } catch {
+          previewApplied = false;
+        }
+      }
+
+      if (video.readyState >= 1) {
+        applyPreviewFrame();
+      } else {
+        video.addEventListener("loadedmetadata", applyPreviewFrame, { once: true });
+      }
+
+      video.addEventListener("play", () => {
+        if (firstPlayHandled) return;
+        firstPlayHandled = true;
+
+        video.pause();
+
+        try {
+          video.currentTime = 0;
+        } catch {}
+
+        const playPromise = video.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(() => {});
+        }
+      });
+    }
+
+    async function render() {
+      try {
+        const res = await fetch("manifest.json");
+        if (!res.ok) throw new Error("manifest.json non trovato");
+        const manifest = await res.json();
+
+        const items = (manifest.files || [])
+          .map(item => {
+            const path = typeof item === "string" ? item : item?.path;
+            if (!path) return null;
+
+            return {
+              path,
+              preview: typeof item === "object" ? item.preview : undefined,
+              type: detectType(path)
+            };
+          })
+          .filter(Boolean);
+
+        const filtered = items.filter(x => x.path.startsWith("portfolio/"));
+
+        const bySection = groupBy(filtered, item => {
+          const parts = item.path.split("/");
+          return parts.length >= 4 && parts[1] === "video-content" ? parts[2] : (parts.length >= 3 ? parts[1] : "other");
+        });
+
+        const sectionOrder = [
+          "ai-content",
+          "video-content",
+          "content-adaptation",
+          "ecommerce",
+          "telegram",
+          "ar-interactive"
+        ];
+
+        for (const sectionName of sectionOrder) {
+          const sectionItems = bySection[sectionName];
+          if (!sectionItems || !sectionItems.length) continue;
+
+          const sectionEl = document.createElement("section");
+          sectionEl.className = "section";
+          sectionEl.innerHTML = `<h2>${prettyName(sectionName)}</h2>`;
+
+          const byProject = groupBy(sectionItems, item => {
+            const parts = item.path.split("/");
+            return parts.length >= 4 ? parts.slice(2, 4).join("/") : "misc";
+          });
+
+          const projectKeys = Object.keys(byProject).sort();
+
+          for (const projectKey of projectKeys) {
+            const projectEl = document.createElement("div");
+            projectEl.className = "project";
+
+            const [subcat, concept] = projectKey.split("/");
+            projectEl.innerHTML = `<h3>${prettyName(subcat)} / ${prettyName(concept || "misc")}</h3>`;
+
+            const filesEl = document.createElement("div");
+            filesEl.className = "files";
+
+            const projectItems = byProject[projectKey]
+              .sort((a, b) => a.path.localeCompare(b.path));
+
+            for (const item of projectItems) {
+              const card = document.createElement("div");
+              card.className = "card";
+
+              if (item.type === "image") {
+                card.innerHTML = `
+                  <a href="${item.path}" target="_blank" rel="noopener">
+                    <img src="${item.path}" alt="${item.path}">
+                  </a>
+                  <div class="filename"><a href="${item.path}" target="_blank" rel="noopener">${item.path.split("/").pop()}</a></div>
+                `;
+              } else if (item.type === "video") {
+                card.classList.add("video-card");
+                const video = document.createElement("video");
+                video.controls = true;
+                video.preload = "metadata";
+                video.src = item.path;
+
+                if (item.preview !== undefined) {
+                  video.dataset.previewTime = String(item.preview);
+                }
+
+                card.appendChild(video);
+                card.insertAdjacentHTML("beforeend", `
+                  <div class="filename"><a href="${item.path}" target="_blank" rel="noopener">${item.path.split("/").pop()}</a></div>
+                `);
+                setupVideoPreview(video);
+              } else if (item.type === "text") {
+                const txt = await fetchText(item.path);
+                card.innerHTML = `
+                  <div class="filename"><a href="${item.path}" target="_blank" rel="noopener">${item.path.split("/").pop()}</a></div>
+                  <pre class="text-preview">${(txt || "").slice(0, 1200)}</pre>
+                `;
+              } else {
+                card.innerHTML = `
+                  <div class="filename"><a href="${item.path}" target="_blank" rel="noopener">${item.path.split("/").pop()}</a></div>
+                `;
+              }
+
+              filesEl.appendChild(card);
+            }
+
+            projectEl.appendChild(filesEl);
+            sectionEl.appendChild(projectEl);
+          }
+
+          app.appendChild(sectionEl);
+        }
+
+        if (!app.children.length) {
+          app.innerHTML = `<div class="error">Nessun contenuto trovato dentro portfolio/.</div>`;
+        }
+      } catch (err) {
+        app.innerHTML = `<div class="error">Errore caricamento portfolio: ${err.message}</div>`;
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>

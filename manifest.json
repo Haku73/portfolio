@@ -1,0 +1,51 @@
+{
+  "files": [
+    "portfolio/ai-content/automotive/concept-01/medium_frontquarter_b.png",
+    "portfolio/ai-content/automotive/concept-01/medium_sideprofile_c.png",
+    "portfolio/ai-content/automotive/concept-01/refine_hero_architecture_g.png",
+    "portfolio/ai-content/automotive/concept-01/refine_hero_brutalist_i.png",
+    "portfolio/ai-content/automotive/concept-01/refine_hero_plaza_h.png",
+    "portfolio/ai-content/automotive/concept-01/wide_context_a.png",
+    "portfolio/ai-content/fashion/concept-01/detail_texture_c.png",
+    "portfolio/ai-content/fashion/concept-01/look01_doorway_a.png",
+    "portfolio/ai-content/fashion/concept-01/look02_step_d.png",
+    "portfolio/ai-content/fashion/concept-01/look03_closing_f.png",
+    "portfolio/ai-content/fashion/concept-01/movement_midstep_e.png",
+    "portfolio/ai-content/luxury/concept-01/detail_closeup_d.png",
+    "portfolio/ai-content/luxury/concept-01/detail_closeup_e.png",
+    "portfolio/ai-content/luxury/concept-01/hero_still_a.png",
+    "portfolio/ai-content/luxury/concept-01/medium_composition_b.png",
+    "portfolio/ai-content/luxury/concept-01/medium_composition_c.png",
+    "portfolio/ai-content/luxury/concept-01/variation_mood_f.png",
+    "portfolio/ai-content/real-estate/concept-01/medium_window_b.png",
+    "portfolio/ai-content/real-estate/concept-01/refine_livedin_wide_g.png",
+    "portfolio/ai-content/real-estate/concept-01/refine_reading_corner_i.png",
+    "portfolio/ai-content/real-estate/concept-01/refine_window_trace_h.png",
+    "portfolio/ai-content/real-estate/concept-01/variation_corner_f.png",
+    "portfolio/ai-content/real-estate/concept-01/wide_room_a.png",
+    {
+      "path": "portfolio/ar-interactive/vr_qtar_study.mp4",
+      "preview": 10
+    },
+    {
+      "path": "portfolio/ar-interactive/vr_drone_lidar_cartografia.mp4",
+      "preview": 90
+    },
+    {
+      "path": "portfolio/ar-interactive/ar_building_study.mp4",
+      "preview": 10
+    },
+    {
+      "path": "portfolio/video-content/fox/epk_UGLY.mp4",
+      "preview": 10
+    },
+    {
+      "path": "portfolio/video-content/fox/mix_trailer.mp4",
+      "preview": 32
+    },
+    {
+      "path": "portfolio/video-content/reel/demo-reel_2002.mp4",
+      "preview": 22
+    }
+  ]
+}
