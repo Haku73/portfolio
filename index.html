@@ -240,7 +240,7 @@
 
         const bySection = groupBy(filtered, item => {
           const parts = item.path.split("/");
-          return parts.length >= 4 && parts[1] === "video-content" ? parts[2] : (parts.length >= 3 ? parts[1] : "other");
+          return parts.length >= 3 ? parts[1] : "other";
         });
 
         const preferredSections = [
