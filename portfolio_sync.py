@@ -8,6 +8,19 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent
 MANIFEST_SCRIPT = REPO_ROOT / "build_manifest.py"
 
+# === CONFIGURA QUI ===
+OFFICIAL_REMOTE = "origin"
+OFFICIAL_BRANCH = "main"
+
+# preview: puoi usare un secondo remote oppure un secondo branch
+PREVIEW_REMOTE = "preview"
+PREVIEW_BRANCH = "main"
+
+# cartella/file del CV latex
+CV_TEX = REPO_ROOT / "cv.tex"
+CV_PDF = REPO_ROOT / "cv.pdf"
+# =====================
+
 
 def run(cmd: str) -> None:
     print(f"\n>>> {cmd}")
@@ -36,33 +49,109 @@ def ensure_manifest() -> None:
         print("\n⚠️ build_manifest.py non trovato: salto rigenerazione manifest.json")
 
 
-def update_normal() -> None:
-    ensure_manifest()
+def ensure_latex() -> None:
+    if not CV_TEX.exists():
+        print(f"❌ File LaTeX non trovato: {CV_TEX}")
+        sys.exit(1)
+
+    if shutil.which("latexmk") is None and shutil.which("pdflatex") is None:
+        print("❌ Non trovo né latexmk né pdflatex nel sistema.")
+        sys.exit(1)
+
+
+def git_commit_if_needed(message: str) -> None:
     run("git add -A")
-    run('git commit -m "update portfolio" || echo "nothing to commit"')
-    run("git push origin main")
+    run(f'git commit -m "{message}" || echo "nothing to commit"')
 
 
-def force_push_local_to_remote() -> None:
-    if not confirm("⚠️ Sovrascrivere COMPLETAMENTE il remoto con il locale?"):
+def update_official() -> None:
+    ensure_manifest()
+    git_commit_if_needed("update portfolio")
+    run(f"git push {OFFICIAL_REMOTE} {OFFICIAL_BRANCH}")
+
+
+def update_preview() -> None:
+    ensure_manifest()
+    git_commit_if_needed("update portfolio preview")
+    run(f"git push {PREVIEW_REMOTE} {PREVIEW_BRANCH}")
+
+
+def force_push_local_to_official() -> None:
+    if not confirm("⚠️ Sovrascrivere COMPLETAMENTE il remoto OFFICIAL con il locale?"):
         return
 
     ensure_manifest()
     run("git checkout --orphan clean-main")
     run("git add -A")
-    run('git commit -m "force sync from local"')
+    run('git commit -m "force sync from local to official"')
     run("git branch -D main")
     run("git branch -m main")
-    run("git push origin main --force")
+    run(f"git push {OFFICIAL_REMOTE} {OFFICIAL_BRANCH} --force")
 
 
-def force_pull_remote_to_local() -> None:
-    if not confirm("⚠️ Sovrascrivere COMPLETAMENTE il locale con il remoto?"):
+def force_push_local_to_preview() -> None:
+    if not confirm("⚠️ Sovrascrivere COMPLETAMENTE il remoto PREVIEW con il locale?"):
         return
 
-    run("git fetch origin")
-    run("git reset --hard origin/main")
+    ensure_manifest()
+    run("git checkout --orphan clean-main")
+    run("git add -A")
+    run('git commit -m "force sync from local to preview"')
+    run("git branch -D main")
+    run("git branch -m main")
+    run(f"git push {PREVIEW_REMOTE} {PREVIEW_BRANCH} --force")
+
+
+def force_pull_official_to_local() -> None:
+    if not confirm("⚠️ Sovrascrivere COMPLETAMENTE il locale con OFFICIAL?"):
+        return
+
+    run(f"git fetch {OFFICIAL_REMOTE}")
+    run(f"git reset --hard {OFFICIAL_REMOTE}/{OFFICIAL_BRANCH}")
     run("git clean -fd")
+
+
+def promote_preview_to_official() -> None:
+    if not confirm("⚠️ Promuovere PREVIEW -> OFFICIAL sovrascrivendo il sito ufficiale?"):
+        return
+
+    # Push dello stato locale attuale su official.
+    # L'idea è: pubblichi e testi su preview, poi quando va bene lanci questo.
+    ensure_manifest()
+    git_commit_if_needed("promote preview to official")
+    run(f"git push {OFFICIAL_REMOTE} {OFFICIAL_BRANCH} --force")
+
+
+def build_cv_pdf() -> None:
+    ensure_latex()
+
+    if shutil.which("latexmk") is not None:
+        run(f'latexmk -pdf -interaction=nonstopmode -halt-on-error "{CV_TEX.name}"')
+    else:
+        run(f'pdflatex -interaction=nonstopmode "{CV_TEX.name}"')
+        run(f'pdflatex -interaction=nonstopmode "{CV_TEX.name}"')
+
+    if not CV_PDF.exists():
+        print(f"❌ PDF non generato: {CV_PDF}")
+        sys.exit(1)
+
+    print(f"\n✅ PDF generato: {CV_PDF}")
+
+
+def open_cv_pdf() -> None:
+    if not CV_PDF.exists():
+        print(f"❌ PDF non trovato: {CV_PDF}")
+        sys.exit(1)
+
+    if sys.platform == "darwin":
+        run(f'open "{CV_PDF.name}"')
+    else:
+        print(f"✅ PDF pronto: {CV_PDF}")
+
+
+def build_and_open_cv() -> None:
+    build_cv_pdf()
+    open_cv_pdf()
 
 
 def show_status() -> None:
@@ -73,24 +162,51 @@ def show_status() -> None:
     else:
         print("\n⚠️ manifest.json non trovato")
 
+    print(f"\nRepo root: {REPO_ROOT}")
+    print(f"Official -> {OFFICIAL_REMOTE}/{OFFICIAL_BRANCH}")
+    print(f"Preview  -> {PREVIEW_REMOTE}/{PREVIEW_BRANCH}")
+    print(f"CV tex   -> {CV_TEX}")
+    print(f"CV pdf   -> {CV_PDF}")
+
 
 def menu() -> None:
-    print("\n=== PORTFOLIO SYNC TOOL ===\n")
-    print("1) Aggiorna normalmente (rigenera manifest + commit + push)")
-    print("2) Sovrascrivi REMOTO con LOCALE (rigenera manifest + force push)")
-    print("3) Sovrascrivi LOCALE con REMOTO (force pull)")
-    print("4) Mostra stato repo")
+    print("\n=== PORTFOLIO + CV TOOL ===\n")
+    print("1) Aggiorna OFFICIAL (manifest + commit + push)")
+    print("2) Aggiorna PREVIEW (manifest + commit + push)")
+    print("3) Sovrascrivi OFFICIAL con LOCALE (force push)")
+    print("4) Sovrascrivi PREVIEW con LOCALE (force push)")
+    print("5) Sovrascrivi LOCALE con OFFICIAL")
+    print("6) Promuovi PREVIEW -> OFFICIAL")
+    print("7) Rigenera manifest.json")
+    print("8) Compila CV LaTeX -> PDF")
+    print("9) Compila CV LaTeX -> PDF e apri PDF")
+    print("10) Apri PDF CV esistente")
+    print("11) Mostra stato repo")
     print("0) Esci\n")
 
     choice = input("Scelta: ").strip()
 
     if choice == "1":
-        update_normal()
+        update_official()
     elif choice == "2":
-        force_push_local_to_remote()
+        update_preview()
     elif choice == "3":
-        force_pull_remote_to_local()
+        force_push_local_to_official()
     elif choice == "4":
+        force_push_local_to_preview()
+    elif choice == "5":
+        force_pull_official_to_local()
+    elif choice == "6":
+        promote_preview_to_official()
+    elif choice == "7":
+        ensure_manifest()
+    elif choice == "8":
+        build_cv_pdf()
+    elif choice == "9":
+        build_and_open_cv()
+    elif choice == "10":
+        open_cv_pdf()
+    elif choice == "11":
         show_status()
     elif choice == "0":
         sys.exit(0)
