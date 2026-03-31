@@ -65,10 +65,13 @@ def git_commit_if_needed(message: str) -> None:
 
 
 def update_official() -> None:
+    if not confirm("⚠️ Stai per aggiornare il sito OFFICIAL. Continuare?"):
+        print("❌ Operazione annullata")
+        return
+
     ensure_manifest()
     git_commit_if_needed("update portfolio")
     run(f"git push {OFFICIAL_REMOTE} {OFFICIAL_BRANCH}")
-
 
 def update_preview() -> None:
     ensure_manifest()
@@ -148,6 +151,15 @@ def open_cv_pdf() -> None:
     else:
         print(f"✅ PDF pronto: {CV_PDF}")
 
+def open_cv_tex() -> None:
+    if not CV_TEX.exists():
+        print(f"❌ File LaTeX non trovato: {CV_TEX}")
+        sys.exit(1)
+
+    if sys.platform == "darwin":
+        run(f'open "{CV_TEX.name}"')
+    else:
+        print(f"✅ File TeX pronto: {CV_TEX}")
 
 def build_and_open_cv() -> None:
     build_cv_pdf()
@@ -170,51 +182,56 @@ def show_status() -> None:
 
 
 def menu() -> None:
-    print("\n=== PORTFOLIO + CV TOOL ===\n")
-    print("1) Aggiorna OFFICIAL (manifest + commit + push)")
-    print("2) Aggiorna PREVIEW (manifest + commit + push)")
-    print("3) Sovrascrivi OFFICIAL con LOCALE (force push)")
-    print("4) Sovrascrivi PREVIEW con LOCALE (force push)")
-    print("5) Sovrascrivi LOCALE con OFFICIAL")
-    print("6) Promuovi PREVIEW -> OFFICIAL")
-    print("7) Rigenera manifest.json")
-    print("8) Compila CV LaTeX -> PDF")
-    print("9) Compila CV LaTeX -> PDF e apri PDF")
-    print("10) Apri PDF CV esistente")
-    print("11) Mostra stato repo")
-    print("0) Esci\n")
+    while True:
+        print("\n=== PORTFOLIO + CV TOOL ===\n")
+        print("1) Aggiorna OFFICIAL (manifest + commit + push)")
+        print("2) Aggiorna PREVIEW (manifest + commit + push)")
+        print("3) Sovrascrivi OFFICIAL con LOCALE (force push)")
+        print("4) Sovrascrivi PREVIEW con LOCALE (force push)")
+        print("5) Sovrascrivi LOCALE con OFFICIAL")
+        print("6) Promuovi PREVIEW -> OFFICIAL")
+        print("7) Rigenera manifest.json")
+        print("8) Apri file CV LaTeX")
+        print("9) Compila CV LaTeX -> PDF")
+        print("10) Compila CV LaTeX -> PDF e apri PDF")
+        print("11) Apri PDF CV esistente")
+        print("12) Mostra stato repo")
+        print("0) Esci\n")
 
-    choice = input("Scelta: ").strip()
+        choice = input("Scelta: ").strip()
 
-    if choice == "1":
-        update_official()
-    elif choice == "2":
-        update_preview()
-    elif choice == "3":
-        force_push_local_to_official()
-    elif choice == "4":
-        force_push_local_to_preview()
-    elif choice == "5":
-        force_pull_official_to_local()
-    elif choice == "6":
-        promote_preview_to_official()
-    elif choice == "7":
-        ensure_manifest()
-    elif choice == "8":
-        build_cv_pdf()
-    elif choice == "9":
-        build_and_open_cv()
-    elif choice == "10":
-        open_cv_pdf()
-    elif choice == "11":
-        show_status()
-    elif choice == "0":
-        sys.exit(0)
-    else:
-        print("Scelta non valida")
-        sys.exit(1)
+        if choice == "1":
+            update_official()
+        elif choice == "2":
+            update_preview()
+        elif choice == "3":
+            force_push_local_to_official()
+        elif choice == "4":
+            force_push_local_to_preview()
+        elif choice == "5":
+            force_pull_official_to_local()
+        elif choice == "6":
+            promote_preview_to_official()
+        elif choice == "7":
+            ensure_manifest()
+        elif choice == "8":
+            open_cv_tex()
+        elif choice == "9":
+            build_cv_pdf()
+        elif choice == "10":
+            build_and_open_cv()
+        elif choice == "11":
+            open_cv_pdf()
+        elif choice == "12":
+            show_status()
+        elif choice == "0":
+            print("👋 Uscita")
+            sys.exit(0)
+        else:
+            print("❌ Scelta non valida")
 
-
+        input("\nPremi invio per tornare al menu...")
+                
 if __name__ == "__main__":
     ensure_git_repo()
     menu()
