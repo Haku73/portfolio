@@ -25,16 +25,25 @@
     "portfolio/ai-content/real-estate/concept-01/refine_window_trace_h.png",
     "portfolio/ai-content/real-estate/concept-01/variation_corner_f.png",
     "portfolio/ai-content/real-estate/concept-01/wide_room_a.png",
-    "portfolio/ar-vr-interactive/ar_building_study.mp4",
-    "portfolio/ar-vr-interactive/vr_drone_lidar_cartografia.mp4",
-    "portfolio/ar-vr-interactive/vr_qtar_study.mp4",
+    "portfolio/ecommerce/consulting-client.png",
+    "portfolio/ecommerce/flower-client.png",
+    "portfolio/ecommerce/juno-client.png",
+    {
+      "path": "portfolio/ar-vr-interactive/ar_building_study.mp4",
+      "preview": 10
+    },
+    {
+      "path": "portfolio/ar-vr-interactive/vr_drone_lidar_cartografia.mp4",
+      "preview": 90
+    },
+    {
+      "path": "portfolio/ar-vr-interactive/vr_qtar_study.mp4",
+      "preview": 10
+    },
     {
       "path": "portfolio/artist-films/torturing_flowers_2011.mp4",
       "preview": 22
     },
-    "portfolio/ecommerce/consulting-client.png",
-    "portfolio/ecommerce/flower-client.png",
-    "portfolio/ecommerce/juno-client.png",
     {
       "path": "portfolio/video-content/fox/epk_UGLY.mp4",
       "preview": 10

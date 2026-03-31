@@ -12,41 +12,20 @@ ALLOWED_SUFFIXES = {
     ".md", ".txt", ".json"
 }
 
-VIDEO_SUFFIXES = {".mp4", ".webm", ".mov", ".m4v"}
 
-
-def load_existing_manifest() -> dict[str, dict]:
-    """
-    Restituisce una mappa:
-      path -> metadata esistente (es. {"preview": 8})
-    leggendo il manifest attuale.
-    """
+def load_existing_manifest():
     if not OUT.exists():
-        return {}
+        return []
 
     try:
         data = json.loads(OUT.read_text(encoding="utf-8"))
+        return data.get("files", [])
     except Exception:
-        return {}
-
-    result: dict[str, dict] = {}
-
-    for item in data.get("files", []):
-        if isinstance(item, str):
-            result[item] = {}
-        elif isinstance(item, dict):
-            path = item.get("path")
-            if isinstance(path, str) and path:
-                meta = {k: v for k, v in item.items() if k != "path"}
-                result[path] = meta
-
-    return result
+        return []
 
 
-def main() -> None:
-    existing = load_existing_manifest()
-    files: list[str | dict] = []
-
+def scan_files():
+    found = []
     if PORTFOLIO.exists():
         for p in sorted(PORTFOLIO.rglob("*")):
             if not p.is_file():
@@ -55,23 +34,42 @@ def main() -> None:
                 continue
             if p.suffix.lower() not in ALLOWED_SUFFIXES:
                 continue
+            found.append(p.relative_to(ROOT).as_posix())
+    return found
 
-            rel_path = p.relative_to(ROOT).as_posix()
-            meta = existing.get(rel_path, {})
 
-            # Se c'è metadata da preservare, scrive oggetto
-            if meta:
-                entry = {"path": rel_path, **meta}
-                files.append(entry)
-            else:
-                files.append(rel_path)
+def main():
+    existing_entries = load_existing_manifest()
+    scanned_paths = scan_files()
+    scanned_set = set(scanned_paths)
+
+    # 1. conserva gli entry esistenti ancora validi, nello stesso ordine
+    result = []
+    already_added = set()
+
+    for entry in existing_entries:
+        if isinstance(entry, str):
+            path = entry
+            if path in scanned_set:
+                result.append(path)
+                already_added.add(path)
+        elif isinstance(entry, dict):
+            path = entry.get("path")
+            if isinstance(path, str) and path in scanned_set:
+                result.append(entry)
+                already_added.add(path)
+
+    # 2. aggiungi eventuali nuovi file non ancora presenti
+    for path in scanned_paths:
+        if path not in already_added:
+            result.append(path)
 
     OUT.write_text(
-        json.dumps({"files": files}, indent=2, ensure_ascii=False),
+        json.dumps({"files": result}, indent=2, ensure_ascii=False),
         encoding="utf-8"
     )
 
-    print(f"Wrote {OUT} with {len(files)} files.")
+    print(f"Wrote {OUT} with {len(result)} files.")
 
 
 if __name__ == "__main__":
