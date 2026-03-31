@@ -25,15 +25,36 @@
     "portfolio/ai-content/real-estate/concept-01/refine_window_trace_h.png",
     "portfolio/ai-content/real-estate/concept-01/variation_corner_f.png",
     "portfolio/ai-content/real-estate/concept-01/wide_room_a.png",
-    "portfolio/ar-interactive/ar_building_study.mp4",
-    "portfolio/ar-interactive/vr_drone_lidar_cartografia.mp4",
-    "portfolio/ar-interactive/vr_qtar_study.mp4",
-    "portfolio/artist-films/torturing_flowers_2011.mp4",
+    {
+      "path": "portfolio/ar-interactive/ar_building_study.mp4",
+      "preview": 10
+    },
+    {
+      "path": "portfolio/ar-interactive/vr_drone_lidar_cartografia.mp4",
+      "preview": 90
+    },
+    {
+      "path": "portfolio/ar-interactive/vr_qtar_study.mp4",
+      "preview": 10
+    },
+    {
+      "path": "portfolio/artist-films/torturing_flowers_2011.mp4",
+      "preview": 22
+    },
     "portfolio/ecommerce/consulting-client.png",
     "portfolio/ecommerce/flower-client.png",
     "portfolio/ecommerce/juno-client.png",
-    "portfolio/video-content/fox/epk_UGLY.mp4",
-    "portfolio/video-content/fox/mix_trailer.mp4",
-    "portfolio/video-content/reel/demo-reel_2002.mp4"
+    {
+      "path": "portfolio/video-content/fox/epk_UGLY.mp4",
+      "preview": 10
+    },
+    {
+      "path": "portfolio/video-content/fox/mix_trailer.mp4",
+      "preview": 32
+    },
+    {
+      "path": "portfolio/video-content/reel/demo-reel_2002.mp4",
+      "preview": 22
+    }
   ]
 }
