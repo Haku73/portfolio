@@ -3,7 +3,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-
+import time
 
 REPO_ROOT = Path(__file__).resolve().parent
 MANIFEST_SCRIPT = REPO_ROOT / "build_manifest.py"
@@ -151,6 +151,24 @@ def open_cv_pdf() -> None:
     else:
         print(f"✅ PDF pronto: {CV_PDF}")
 
+def cache_busted(url: str) -> str:
+    return f"{url}?nocache={int(time.time())}"
+
+def open_preview_site() -> None:
+    url = "https://haku73.github.io/portfolio-preview/"
+    if sys.platform == "darwin":
+        run(f'open "{cache_busted(url)}"')
+    else:
+        print(f"Apri manualmente: {url}")
+
+
+def open_official_site() -> None:
+    url = "https://haku73.github.io/portfolio/"
+    if sys.platform == "darwin":
+        run(f'open "{cache_busted(url)}"')
+    else:
+        print(f"Apri manualmente: {url}")
+
 def open_cv_tex() -> None:
     if not CV_TEX.exists():
         print(f"❌ File LaTeX non trovato: {CV_TEX}")
@@ -180,10 +198,8 @@ def show_status() -> None:
     print(f"CV tex   -> {CV_TEX}")
     print(f"CV pdf   -> {CV_PDF}")
 
-
 def menu() -> None:
     while True:
-        print("\n=== PORTFOLIO + CV TOOL ===\n")
         print("1) Aggiorna OFFICIAL (manifest + commit + push)")
         print("2) Aggiorna PREVIEW (manifest + commit + push)")
         print("3) Sovrascrivi OFFICIAL con LOCALE (force push)")
@@ -191,13 +207,19 @@ def menu() -> None:
         print("5) Sovrascrivi LOCALE con OFFICIAL")
         print("6) Promuovi PREVIEW -> OFFICIAL")
         print("7) Rigenera manifest.json")
+        print("==========================")
         print("8) Apri file CV LaTeX")
         print("9) Compila CV LaTeX -> PDF")
         print("10) Compila CV LaTeX -> PDF e apri PDF")
         print("11) Apri PDF CV esistente")
-        print("12) Mostra stato repo")
+        print("==========================")
+        print("12) Apri sito PREVIEW")
+        print("13) Apri sito OFFICIAL")
+        print("==========================")
+        print("14) Mostra stato repo")
+        print("==========================")
         print("0) Esci\n")
-
+        
         choice = input("Scelta: ").strip()
 
         if choice == "1":
@@ -223,6 +245,10 @@ def menu() -> None:
         elif choice == "11":
             open_cv_pdf()
         elif choice == "12":
+            open_preview_site()
+        elif choice == "13":
+            open_official_site()
+        elif choice == "14":
             show_status()
         elif choice == "0":
             print("👋 Uscita")
